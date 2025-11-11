@@ -1,0 +1,70 @@
+-- Script by Delta Interactive (PLACE THIS IN ServerScriptService)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local voteButton = Workspace.SpaceShipLobby:FindFirstChild("VoteButton") -- This button triggers the vote
+local prompt = voteButton:FindFirstChild("ProximityPrompt")
+
+local votes = 0
+local totalPlayers = #Players:GetPlayers()
+local votedPlayers = {}
+
+-- Create a RemoteEvent to update UI
+local voteUpdateEvent = Instance.new("RemoteEvent")
+voteUpdateEvent.Name = "VoteUpdate"
+voteUpdateEvent.Parent = ReplicatedStorage
+
+-- Function to update the GUI for all players
+local function updateVoteCount()
+	voteUpdateEvent:FireAllClients(votes, totalPlayers)
+end
+
+-- Function to teleport all players to the map
+local function teleportPlayers()
+	local map = Workspace:FindFirstChild("MapGoesHere") --Change to Your Map
+	local spawnPoints = map and map:FindFirstChild("SpawnPoints") -- Make sure to have SpawnPoints in your Map
+
+	if spawnPoints and #spawnPoints:GetChildren() > 0 then
+		for _, player in pairs(Players:GetPlayers()) do
+			if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				local spawnLocation = spawnPoints:GetChildren()[math.random(1, #spawnPoints:GetChildren())]
+				player.Character.HumanoidRootPart.CFrame = spawnLocation.CFrame
+			end
+		end
+	end
+end
+
+-- When a player interacts with the button
+prompt.Triggered:Connect(function(player)
+	if not votedPlayers[player] then
+		votedPlayers[player] = true
+		votes = votes + 1
+		updateVoteCount()
+
+		if votes >= totalPlayers then
+			teleportPlayers()
+		end
+	end
+end)
+
+-- Player joins (Update total players count)
+Players.PlayerAdded:Connect(function()
+	totalPlayers = #Players:GetPlayers()
+	updateVoteCount()
+end)
+
+-- Player leaves (Adjust votes and count)
+Players.PlayerRemoving:Connect(function(player)
+	totalPlayers = #Players:GetPlayers()
+
+	if votedPlayers[player] then
+		votes = votes - 1
+		votedPlayers[player] = nil
+	end
+
+	updateVoteCount()
+end)
+
+-- Initialize vote count on startup
+updateVoteCount()

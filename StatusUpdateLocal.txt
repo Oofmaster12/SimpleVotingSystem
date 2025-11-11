@@ -1,0 +1,10 @@
+--Created by Delta Interactive (Place This Local Script inside your Voting GUI) (Make Sure to Have a TextLabel Called "VoteCounter")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local voteUpdateEvent = ReplicatedStorage:WaitForChild("VoteUpdate")
+
+local gui = script.Parent
+local voteCounter = gui:FindFirstChild("VoteCounter")
+
+voteUpdateEvent.OnClientEvent:Connect(function(votes, totalPlayers)
+	voteCounter.Text = votes .. "/" .. totalPlayers
+end)
