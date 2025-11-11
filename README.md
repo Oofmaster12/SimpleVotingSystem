@@ -1,2 +1,4 @@
 # SimpleVotingSystem
-A Simple Roblox Voting System
+A Simple Roblox Voting System 
+Developed By Delta Interactive
+2025
